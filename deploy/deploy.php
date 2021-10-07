@@ -48,6 +48,7 @@ function processAdmin() {
 }
 
 set_exception_handler(function () {
+    deploy_log("exception");
     echo "Deploy failed";
 });
 
