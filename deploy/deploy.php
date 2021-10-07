@@ -8,12 +8,13 @@ if (!file_exists("deploy.json")) {
     file_put_contents("deploy.json", json_encode(['last-commit' => null]));
 }
 
+$deploy = json_decode(file_get_contents("deploy.json"), true);
+
 if (!file_exists($dir)) {
     mkdir($dir, 0755, true);
+    chdir($dir);
     exec_cmd("git clone https://github.com/yaliniyalu/tathy.git");
 }
-
-$deploy = json_decode(file_get_contents("deploy.json"), true);
 
 $lastCommit = $deploy['last-commit'];
 
