@@ -6,6 +6,9 @@ checkHookSecret($secret);
 
 if (!file_exists("deploy.json")) {
     file_put_contents("deploy.json", json_encode(['last-commit' => null]));
+}
+
+if (!file_exists($dir)) {
     mkdir($dir, 0755, true);
     exec_cmd("git clone https://github.com/yaliniyalu/tathy.git");
 }
