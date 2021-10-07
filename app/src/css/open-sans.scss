@@ -1,0 +1,25 @@
+$fonts:
+'Light' 300 normal,
+'Regular' 400 normal,
+'Medium' 500 normal,
+'SemiBold' 600 normal,
+'Bold' 700 normal,
+'ExtraBold' 800 normal,
+
+'LightItalic' 300 italic,
+'Italic' 400 italic,
+'MediumItalic' 500 italic,
+'SemiBoldItalic' 600 italic,
+'BoldItalic' 700 italic,
+'ExtraBoldItalic' 800 italic;
+
+@each $name, $weight, $style in $fonts {
+  @font-face {
+    font-family: 'Open Sans';
+    font-style: $style;
+    font-weight: $weight;
+    font-stretch: normal;
+    font-display: swap;
+    src: url('src/assets/fonts/OpenSans/OpenSans-' + $name + '.ttf') format('truetype');
+  }
+}

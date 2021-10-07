@@ -1,0 +1,10 @@
+{
+	"appId": "com.yalusoft.tathy",
+	"appName": "Tathy",
+	"bundledWebRuntime": false,
+	"npmClient": "yarn",
+	"webDir": "www",
+	"server": {
+		"url": "http://192.168.1.4:8080"
+	}
+}

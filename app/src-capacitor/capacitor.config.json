@@ -1,0 +1,7 @@
+{
+  "appId": "com.yalusoft.tathy",
+  "appName": "Infopedia",
+  "bundledWebRuntime": false,
+  "npmClient": "yarn",
+  "webDir": "www"
+}

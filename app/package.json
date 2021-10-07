@@ -1,0 +1,52 @@
+{
+  "name": "tathy-app",
+  "version": "0.0.1",
+  "description": "Tathy - Facts App",
+  "productName": "Tathy",
+  "author": "Samar Yalini <samarjben@outlook.com>",
+  "private": true,
+  "scripts": {
+    "dev:android": "quasar dev -m capacitor -T android",
+    "dev": "quasar dev",
+    "test": "echo \"No test specified\" && exit 0"
+  },
+  "dependencies": {
+    "@capacitor-community/sqlite": "^3.2.3-1",
+    "@capacitor/app": "^1.0.3",
+    "@capacitor/core": "^3.2.4",
+    "@capacitor/device": "^1.0.3",
+    "@capacitor/network": "^1.0.3",
+    "@capacitor/share": "^1.0.4",
+    "@capacitor/status-bar": "^1.0.3",
+    "@capacitor/storage": "^1.2.0",
+    "@quasar/extras": "^1.0.0",
+    "axios": "^0.21.1",
+    "core-js": "^3.6.5",
+    "dotenv": "^10.0.0",
+    "quasar": "^2.0.0",
+    "swiper": "^7.0.6",
+    "vue": "3.2.4",
+    "vue-router": "4.0.11",
+    "vuex": "^4.0.1"
+  },
+  "devDependencies": {
+    "@quasar/app": "^3.0.0",
+    "raw-loader": "^4.0.2"
+  },
+  "browserslist": [
+    "last 10 Chrome versions",
+    "last 10 Firefox versions",
+    "last 4 Edge versions",
+    "last 7 Safari versions",
+    "last 8 Android versions",
+    "last 8 ChromeAndroid versions",
+    "last 8 FirefoxAndroid versions",
+    "last 10 iOS versions",
+    "last 5 Opera versions"
+  ],
+  "engines": {
+    "node": ">= 12.22.1",
+    "npm": ">= 6.13.4",
+    "yarn": ">= 1.21.1"
+  }
+}

@@ -1,0 +1,13 @@
+// app global css in SCSS form
+@import "open-sans";
+
+@font-face {
+  font-family: 'Fleur De Leah';
+  src: url(src/assets/fonts/FleurDeLeah-Regular.ttf) format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+body {
+  font-family: 'Open Sans', sans-serif;
+}
