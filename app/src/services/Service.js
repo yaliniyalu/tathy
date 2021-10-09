@@ -29,7 +29,6 @@ class Service {
 
   async createAllTables() {
     await this.run("create table if not exists items(id CHAR(24) PRIMARY KEY, is_bookmarked INTEGER DEFAULT 0, is_liked INTEGER DEFAULT 0)")
-    await this.run("create table if not exists packs(id CHAR(24) PRIMARY KEY, learned_count INTEGER DEFAULT 0)")
   }
 }
 

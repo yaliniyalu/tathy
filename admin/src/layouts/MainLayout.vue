@@ -64,7 +64,8 @@ import {useRouter} from "vue-router";
 
 const menu = [
   { icon: 'home', name: 'Home', to: '/', role: '*' },
-  { icon: 'inventory_2', name: 'Packs', to: '/packs', role: '*' },
+  // { icon: 'inventory_2', name: 'Packs', to: '/packs', role: '*' },
+  { icon: 'inventory_2', name: 'Items', to: '/items', role: '*' },
   { icon: 'report_problem', name: 'Reports', to: '/reports', role: '*' },
   // { icon: 'people', name: 'Accounts', to: '/accounts', role: 'admin' },
   { icon: 'manage_accounts', name: 'My Account', to: '/accounts/me', role: '*' },

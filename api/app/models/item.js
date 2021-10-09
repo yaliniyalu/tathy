@@ -4,6 +4,7 @@ const bcrypt = require("bcrypt");
 const renderSvg = require("../render-svg");
 
 const schema = new mongoose.Schema({
+    index: Number,
     type: String,
     text: String,
     image: {
@@ -34,9 +35,6 @@ const schema = new mongoose.Schema({
         fontFamily: String,
         themeColor: String,
     },
-
-    likes: Number,
-    views: Number,
 
     status: { type: String, enum: ['Pending', 'Approved', 'Rejected'], default: 'Pending' },
     statusChangedBy: {
@@ -77,16 +75,6 @@ schema.pre("save", function (next) {
 
     return next()
 })
-
-/*schema.post('save', function () {
-    if (this._prevImage) {
-        fs.unlink(process.env.UPLOAD_DIR + "/items/" + this._prevImage, () => {})
-    }
-
-    if (this._prevStyleImage) {
-        fs.unlink(process.env.UPLOAD_DIR + "/items/cropped/" + this._prevStyleImage, () => {})
-    }
-});*/
 
 // svg
 schema.pre("save", function (next) {

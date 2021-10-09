@@ -38,6 +38,10 @@ class SvgCreator {
     this.textNode = null
   }
 
+  getSvgSize() {
+    return { w, h }
+  }
+
   setThemeColor(color) {
     this.themeColor = color
     this.render()

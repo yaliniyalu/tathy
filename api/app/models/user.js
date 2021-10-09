@@ -92,4 +92,15 @@ schema.methods.comparePassword = async function(candidatePassword) {
 
 const User = mongoose.model('User', schema);
 
+/*let user = User.findOne()
+if (!user) {
+    /!** @yype User *!/
+    const user = new User()
+    user.name = "Admin"
+    user.email = "admin@example.com"
+    user.password = "123456"
+    user.role = "Admin"
+    user.save().then()
+}*/
+
 module.exports = User

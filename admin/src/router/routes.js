@@ -8,9 +8,8 @@ const routes = [
       { path: '', component: () => import('pages/Index.vue') },
       { path: '/accounts/me', component: () => import('pages/MyAccount') },
       { path: '/accounts', component: () => import('pages/Accounts') },
-      { path: '/packs', component: () => import('pages/Packs') },
-      { path: '/pack/:id', component: () => import('pages/Pack') },
-      { path: '/reports', component: () => import('pages/Reports') }
+      { path: '/reports', component: () => import('pages/Reports') },
+      { path: '/items', component: () => import('pages/Items') }
     ],
     beforeEnter: AuthGuard
   },

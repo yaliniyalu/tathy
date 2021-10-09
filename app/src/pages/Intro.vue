@@ -16,22 +16,24 @@
         <q-icon :name="val.icon" size="56px" />
         <div class="q-mt-md text-center">{{ val.text }}</div>
         <q-btn outline label="Next" class="q-mt-lg" @click="nextSlide" v-if="i < data.length - 1"/>
-        <q-btn outline label="Start" class="q-mt-lg" @click="startApp" v-else/>
+        <q-btn outline label="Start" class="q-mt-lg" @click="startApp" :loading="loading" v-else/>
       </q-carousel-slide>
     </q-carousel>
   </q-page>
 </template>
 
 <script setup>
-import {ref} from "vue";
+import {onMounted, ref} from "vue";
 import {Storage} from "@capacitor/storage";
 import {useRouter} from "vue-router";
 import {useStore} from "vuex";
+import AppService from "src/services/AppService";
 
 const router = useRouter()
 const store = useStore()
 
 const slide = ref(0)
+const loading = ref(false)
 
 const data = [
   { icon: 'format_quote', text: 'Live as if you were to die tomorrow. Learn as if you were to live forever.' },
@@ -45,10 +47,20 @@ function nextSlide() {
 }
 
 async function startApp() {
-  store.commit('app/setIsIntroShown', true)
-  await Storage.set({ key: 'intro', value: "1" });
-  await router.replace("/")
+  loading.value = true
+  try {
+    await (new AppService()).registerApp()
+    store.commit('app/setIsIntroShown', true)
+    await Storage.set({ key: 'intro', value: "1" });
+  } finally {
+    await router.replace("/")
+    loading.value = false
+  }
 }
+
+onMounted(() => {
+  AppService.setTheme("#CD5C5C", true)
+})
 
 </script>
 

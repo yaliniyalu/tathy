@@ -1,8 +1,6 @@
 import Service from "src/services/Service";
 
-
 class ItemService extends Service {
-
   async likeItem(id, is_liked) {
     await this.run(`INSERT INTO items (id, is_liked) VALUES (?, ?) ON CONFLICT(id) DO UPDATE SET is_liked = ?;`, [id, is_liked, is_liked])
   }

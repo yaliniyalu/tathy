@@ -1,6 +1,6 @@
 const {Response} = require("../helpers");
 const {StatusCodes} = require("http-status-codes");
-const {Category, Tag} = require("../models");
+const {Tag} = require("../models");
 
 /** @type {ExpressRequestHandler} */
 const listAll = async (req, res) => {
@@ -14,15 +14,6 @@ const listAll = async (req, res) => {
     }
 }
 
-const listCategory = async (req, res) => {
-    const category = await Category.find().exec()
-
-    return res
-        .status(StatusCodes.OK)
-        .json(Response.success({ category }))
-}
-
 module.exports = {
-    listAll,
-    listCategory
+    listAll
 }

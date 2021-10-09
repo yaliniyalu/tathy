@@ -40,7 +40,7 @@
             <div>
               <div class="row q-col-gutter-md">
                 <q-select class="col" v-model="fontFamily" :model-value="fontFamily" outlined stack-label label="Font Family" :options="fontFamilies" :disable="!text"/>
-                <q-select class="col" v-model="themeColor" :model-value="themeColor" outlined stack-label label="Theme Color" :options="themeColors">
+                <q-select class="col" v-model="themeColor" :model-value="themeColor" outlined stack-label label="Theme Color" :options="paletteColors">
                   <template v-slot:option="scope">
                     <q-item v-bind="scope.itemProps">
                       <q-item-section avatar>
@@ -87,8 +87,10 @@ import {computed, onMounted, reactive, ref, watch} from "vue";
 import http from "src/http";
 import SvgCreator from "src/js/svg-creator";
 import ui from "src/ui";
-import {getAssetUrl} from "src/utils";
+import {crop, getAssetUrl, rgbToHex} from "src/utils";
 import ImageCropperDialog from "components/ImageCropperDialog";
+import ColorThief from 'colorthief'
+import {api} from "boot/axios";
 
 const { dialogRef, onDialogOK } = useDialogPluginComponent()
 const $q = useQuasar()
@@ -101,7 +103,6 @@ const props = defineProps({
 
 const types = [
   'None',
-  'Infopedia',
   'Did You Know',
   'Fun Fact',
   'Fact'
@@ -130,7 +131,7 @@ const fontSizeRange = [16, 46];
 
 const id = ref(null)
 const text = ref()
-const type = ref(types[4])
+const type = ref(types[3])
 const image = ref()
 const fontFamily = ref(fontFamilies[6])
 const themeColor = ref(themeColors[0])
@@ -144,6 +145,31 @@ const tags = ref([])
 const typeText = computed(() => type.value === 'None' ? null : type.value)
 const tagsSearch = ref()
 const svgPreview = ref();
+const stolenColors = ref([])
+
+const uploadingImage = ref(false)
+const uploadedImage = ref()
+const savingItem = ref()
+const item = ref(null)
+
+const currImage = reactive({
+  name: '',
+  url: '',
+  croppedName: ''
+})
+
+const paletteColors = computed(() => {
+  const colors = [];
+
+  if (!themeColors.includes(themeColor.value) && !stolenColors.value.includes(themeColor.value)) {
+    colors.push(themeColor.value)
+  }
+
+  colors.push(...themeColors)
+  colors.push(...stolenColors.value)
+
+  return colors
+})
 
 /** @type SvgCreator */
 let svg = null;
@@ -158,11 +184,26 @@ onMounted(async () => {
 
   watch(text, () => svg.setText(text.value), {immediate: true})
   watch(type, () => svg.setTypeText(typeText.value), {immediate: true})
-  watch(image, () => svg.setImage(image.value), {immediate: true})
+  watch(image, () => setImage(), {immediate: true})
   watch(fontFamily, () => svg.setFontFamily(fontFamily.value), {immediate: true})
   watch(themeColor, () => svg.setThemeColor(themeColor.value), {immediate: true})
   watch(imageHeight, () => svg.setImageHeight(imageHeight.value), {immediate: true})
   watch(hasSeparator, () => svg.setHasSeparator(hasSeparator.value), {immediate: true})
+})
+
+function setImage() {
+  svg.setImage(image.value)
+}
+
+watch(() => currImage.url, () => {
+  const img = new Image()
+  img.crossOrigin = "anonymous";
+  img.onload = () => {
+    const thief = new ColorThief()
+    const colors = thief.getPalette(img)
+    stolenColors.value = colors.map(v => rgbToHex(...v))
+  }
+  img.src = image.value
 })
 
 function reloadSvg() {
@@ -192,17 +233,6 @@ function unpackItem() {
   currImage.croppedName = props.item['style']['image']
 }
 
-const uploadingImage = ref(false)
-const uploadedImage = ref()
-const savingItem = ref()
-const item = ref(null)
-
-const currImage = reactive({
-  name: '',
-  url: '',
-  croppedName: ''
-})
-
 watch(uploadedImage, () => {
   uploadImage()
 })
@@ -225,11 +255,33 @@ async function uploadImage() {
     currImage.name = res.data.data.file.filename
     currImage.url = getAssetUrl(res.data.data.file.filename, 'temp')
     currImage.croppedName = res.data.data.file.filename
+
+    await autoCropImage()
   } catch (e) {
-    ui.notifyError(e.response.data.message)
+    ui.notifyError(e.response?.data.message)
   } finally {
     uploadingImage.value = false
   }
+}
+
+async function autoCropImage() {
+  return new Promise(async (resolve, reject) => {
+    const aspectWidth = svg.getSvgSize().w
+    const aspectHeight = svg.h2
+
+    const croppedCanvas = await crop(currImage.url, Math.max(aspectWidth, aspectHeight) / Math.min(aspectWidth, aspectHeight))
+    croppedCanvas.toBlob(async blob => {
+      let data = new FormData();
+      data.append('file', blob);
+
+      const res = await api.post('upload', data, {headers: {'Content-Type': 'multipart/form-data'}})
+
+      image.value = getAssetUrl(res.data.data.file.filename, 'temp')
+      currImage.croppedName = res.data.data.file.filename
+
+      resolve()
+    })
+  })
 }
 
 function cropImage() {

@@ -1,6 +1,7 @@
 export default function () {
   return {
-    isDrawerOpen: false,
-    isIntroShown: false
+    isIntroShown: false,
+    totalFacts: 0,
+    facts: []
   }
 }

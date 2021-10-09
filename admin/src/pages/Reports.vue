@@ -131,7 +131,7 @@ import {useRouter} from "vue-router";
 import {computed, onMounted, ref, watch} from "vue";
 import http from "src/http";
 
-import ViewItem from "components/pack/ViewItem";
+import ViewItem from "components/ViewItem";
 import ui from "src/ui";
 
 const columns = [

@@ -1,8 +1,8 @@
 {
-  "name": "infopedia-admin",
-  "version": "0.0.1",
-  "description": "Infopedia Admin",
-  "productName": "Infopedia Admin",
+  "name": "tathy-admin",
+  "version": "1.0.0",
+  "description": "Tathy Admin",
+  "productName": "Tathy Admin",
   "author": "Samar Yalini <samarjben@outlook.com>",
   "private": true,
   "scripts": {
@@ -14,10 +14,13 @@
     "@quasar/extras": "^1.0.0",
     "@svgdotjs/svg.js": "^3.1.1",
     "axios": "^0.21.1",
+    "colorthief": "^2.3.2",
     "core-js": "^3.6.5",
     "dotenv": "^10.0.0",
+    "echarts": "^5.2.1",
     "quasar": "^2.0.0",
     "vue-cropperjs": "^5.0.0",
+    "vue-echarts": "^6.0.0",
     "wrap-svg-text": "^0.0.6"
   },
   "devDependencies": {

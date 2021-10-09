@@ -1,106 +1,141 @@
 <template>
   <q-page class="q-pa-xs flex flex-center gallery bg-black">
-      <q-carousel
-        v-model="slide"
-        transition-prev="jump-down"
-        transition-next="jump-up"
-        vertical
-        swipeable
-        animated
-        class="bg-black"
-        height="100%"
-        style="width: 100%"
-        fullscreen
-      >
-        <q-carousel-slide :name="i" class="column no-wrap flex-center q-pa-none"  v-for="(item, i) in items">
-          <div class="viewer-container" :style="`width: ${displayWidth}`" ref="imgWrapperRef">
-            <q-img style="width: 100%" :src="getAssetsUrl(`${item._id}_${imageSize}.jpg`, 'items/rendered')" alt="image" @dblclick="likeItem"/>
-          </div>
-        </q-carousel-slide>
+    <q-carousel
+      v-model="slide"
+      transition-prev="jump-down"
+      transition-next="jump-up"
+      vertical
+      swipeable
+      animated
+      class="bg-black"
+      height="100%"
+      style="width: 100%"
+      fullscreen
+    >
+      <q-carousel-slide :name="i" class="column no-wrap flex-center q-pa-none"  v-for="(item, i) in items">
+        <div class="viewer-container" :style="`width: ${displayWidth}`" ref="imgWrapperRef">
+          <q-img style="width: 100%" :src="getAssetsUrl(`${item._id}_${imageSize}.jpg`, 'items/rendered')" alt="image" @dblclick="likeItem"/>
+        </div>
+      </q-carousel-slide>
 
-        <template v-slot:control>
-          <q-page-sticky position="bottom-right" :offset="[18, 42]">
-            <q-fab
-              v-model="fab"
-              label="Actions"
-              external-label
-              vertical-actions-align="left"
-              color="dark"
-              icon="more_vert"
-              direction="up"
-            >
-              <q-fab-action external-label label-position="left" color="primary" @click="shareItem" icon="share" label="Share" />
-              <q-fab-action external-label label-position="left" color="accent" @click="bookmarkItem" icon="bookmark" label="Bookmark" />
-              <q-fab-action external-label label-position="left" color="secondary" @click="reportItem" icon="report_problem" label="Report" />
-            </q-fab>
-          </q-page-sticky>
+      <template v-slot:control>
+        <q-page-sticky position="bottom-right" :offset="[18, 42]">
+          <q-fab
+            v-model="fab"
+            label="Actions"
+            external-label
+            vertical-actions-align="left"
+            color="dark"
+            icon="more_vert"
+            direction="up"
+          >
+            <q-fab-action external-label label-position="left" color="primary" @click="shareItem" icon="share" label="Share" />
+            <q-fab-action external-label label-position="left" color="accent" @click="bookmarkItem" icon="bookmark" label="Bookmark" />
+            <q-fab-action external-label label-position="left" color="secondary" @click="reportItem" icon="report_problem" label="Report" />
+          </q-fab>
+        </q-page-sticky>
 
-          <q-page-sticky position="top" :offset="[0, 18]">
-            <b class="text-white">{{ slide + 1 }}/{{ items.length }}</b>
-          </q-page-sticky>
-        </template>
-      </q-carousel>
+        <q-page-sticky position="top-right" :offset="[18, 8]">
+          <q-btn icon="menu" round color="dark" @click="openMenu"/>
+        </q-page-sticky>
+
+        <q-page-sticky position="top" :offset="[0, 18]">
+          <b class="text-white">{{ slide + 1 }}/{{ totalCount }}</b>
+        </q-page-sticky>
+      </template>
+    </q-carousel>
   </q-page>
 </template>
 
 <script setup>
-import {onBeforeUnmount, onMounted, ref, watch} from "vue";
+import {computed, onBeforeUnmount, onMounted, ref, watch} from "vue";
 import {api} from "boot/axios";
 import {useQuasar} from "quasar";
 import {useRoute, useRouter} from "vue-router";
-import {StatusBar, Style} from "@capacitor/status-bar";
-import {getAssetsUrl, getOptimizeImageSize} from 'src/utils';
+import {getAssetsUrl} from 'src/utils';
 import ItemService from "src/services/ItemService";
-import {PackModel} from "src/services/PackService";
+import {useStore} from "vuex";
+import {Storage} from "@capacitor/storage";
+import AppService from "src/services/AppService";
 
 const quasar = useQuasar()
 const route = useRoute()
 const router = useRouter()
+const store = useStore()
 
-const id = route.params.id
-
-const items = ref([])
+const tag = route.query.tag
 const imageSize = ref("720")
 const slide = ref(0)
 const fab = ref()
 const imgWrapperRef = ref()
-
-const packService = new PackModel({ _id: id })
-
-watch(slide, () => {
-  packService.setLearningIndex(slide.value)
-})
 
 const displayWidth = ref("100%")
 if (window.screen.width > window.screen.height) {
   displayWidth.value = imageSize.value + "px"
 }
 
-onMounted(async () => {
-  await StatusBar.setStyle({ style: Style.Dark });
-  await StatusBar.setBackgroundColor({color: "#000000"})
+const loading = ref(false)
+const totalCount = ref(null)
+const currentIndex = ref(0)
 
-  window.NavigationBar?.backgroundColorByHexString("#000000", false);
-  window.NavigationBar?.hide();
+const items = ref([])
+
+onMounted(async () => {
+  if (!tag) {
+    const { value } = await Storage.get({ key: 'data.currentFact' });
+    slide.value = parseInt(value ?? 0)
+  }
+
+  const fromIndex = Math.max(0, currentIndex.value - 10)
+  await fetchItems(fromIndex)
 })
 
-onMounted(async () => {
-  quasar.loading.show()
-  const res = await api.get(`/pack/${id}/items`);
-  items.value = res.data.data.items
-  quasar.loading.hide()
+watch(loading, () => {
+  if (loading.value) {
+    quasar.loading.show()
+  } else {
+    quasar.loading.hide()
+  }
+})
 
-  document.addEventListener('backbutton', handleBackButton)
+watch(slide, async () => {
+  if (tag) return
+  await Storage.set({ key: 'data.currentFact', value: slide.value.toString() });
+})
+
+watch(totalCount, () => store.commit("app/setTotalFacts", totalCount))
+
+async function fetchItems(from, limit) {
+  loading.value = true
+  try {
+    const res = await api.get(`/items`, {
+      params: {
+        tag: tag,
+        fromIndex: from,
+        withCount: totalCount.value === null
+      }
+    })
+
+    const data = res.data.data
+    if (totalCount.value === null) {
+      totalCount.value = data.count
+    }
+
+    items.value = data.items
+  } catch (e) {
+    quasar.notify({message: e.message, color: 'negative'})
+  } finally {
+    loading.value = false
+  }
+}
+
+onMounted(() => {
+  AppService.setTheme("#000000", false)
 })
 
 onBeforeUnmount(() => {
   document.removeEventListener('backbutton', handleBackButton)
-
-  StatusBar.setStyle({ style: Style.Light });
-  StatusBar.setBackgroundColor({color: "#ffffff"})
-
-  window.NavigationBar?.backgroundColorByHexString("#ffffff", true);
-  window.NavigationBar?.show();
+  AppService.setTheme("#ffffff", true)
 })
 
 async function likeItem(e) {
@@ -136,6 +171,10 @@ const createHeart = (e) => {
   setTimeout( () => heart.remove(), 5000)
 }
 
+function openMenu() {
+  router.push('/menu')
+}
+
 function handleBackButton(e) {
   e.preventDefault()
   router.go(-1)
@@ -153,6 +192,7 @@ function shareItem() {
 }
 
 function bookmarkItem() {
+  ItemService.bookmarkItem(items.value[slide.value]._id, true)
   quasar.notify({
     message: 'Bookmarked',
     icon: 'done',
@@ -192,7 +232,6 @@ async function reportItemRequest(id, report) {
     quasar.loading.hide()
   }
 }
-
 
 </script>
 

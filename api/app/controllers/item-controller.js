@@ -1,8 +1,7 @@
-const {Pack, Item} = require("../models");
+const {Item} = require("../models");
 const {Response} = require("../helpers");
 const {StatusCodes} = require("http-status-codes");
 const Joi = require('joi');
-
 
 /** @type {ExpressRequestHandler} */
 const save = async (req, res) => {
@@ -32,7 +31,6 @@ const save = async (req, res) => {
     }
 
     const paramsSchema = Joi.object({
-        pack: Joi.string().regex(/^[0-9a-fA-F]{24}$/).optional(),
         item: Joi.string().regex(/^[0-9a-fA-F]{24}$/).optional(),
     }).options({ stripUnknown: true })
 
@@ -47,10 +45,6 @@ const save = async (req, res) => {
     const params = valid.value
 
     let item;
-
-    /** @type {Pack | null} */
-    let pack = null;
-
     if (params.item) {
         item = await Item.findById(params.item).exec()
         if (!item) {
@@ -63,29 +57,18 @@ const save = async (req, res) => {
         item = new Item(value)
     }
 
-    if (params.pack) {
-        pack = await Pack.findById(params.pack).exec()
-        if (!pack) {
-            return res
-                .status(StatusCodes.NOT_FOUND)
-                .json(Response.error("Pack not found", null, 404))
-        }
-    }
-
     if (!params.item) { // auto approve
         item.status = 'Approved'
         item.statusChangedBy = req['userId']
         item.statusChangedAt = Date.now()
     }
 
+    const count = await Item.count().exec()
+    item.index = count + 1
+
     item.setAuthor(req['userId'])
 
     await item.save()
-
-    if (pack) {
-        pack.addItem(item)
-        await pack.save()
-    }
 
     return res
         .status(StatusCodes.OK)
@@ -164,11 +147,77 @@ const deleteItem = async (req, res) => {
             .status(StatusCodes.INTERNAL_SERVER_ERROR)
             .json(Response.error(e.message))
     }
+
+    return res
+        .status(StatusCodes.OK)
+        .json(Response.success())
+}
+
+/** @type {ExpressRequestHandler} */
+const listItems = async (req, res) => {
+    const sortField = ['index', 'createdAt', 'status']
+    const populateFields = ['statusChangeBy', 'updatedBy', 'createdBy']
+
+    const schema = Joi.object({
+        limit: Joi.number().optional(),
+        skip: Joi.number().optional(),
+        sort: Joi.object().pattern(Joi.string().valid(...sortField), Joi.number().valid(1, -1)).optional().default({createdAt: -1}),
+        populate: Joi.array().items(Joi.string().valid(...populateFields)).optional().default(populateFields),
+        q: Joi.string().optional(),
+        status: Joi.string().optional()
+    }).options({ stripUnknown: true });
+
+    const {value, error} = schema.validate({...req.body});
+
+    if (error) {
+        return res
+            .status(StatusCodes.BAD_REQUEST)
+            .json(Response.error(error.details[0].message, error.details[0]))
+    }
+
+    const agg = Item.aggregate()
+    if (value.status) {
+        agg.match({status: value.status})
+    }
+
+    const agg2 = Item.aggregate()
+    if (value.sort) agg2.sort(value.sort)
+    if (value.skip) agg2.skip(value.skip)
+    if (value.limit) agg2.limit(value.limit)
+
+    value.populate.forEach(field => {
+        agg2.lookup({
+            from: 'users',
+            localField: field,
+            foreignField: '_id',
+            as: field,
+            pipeline: Item.aggregate()
+                .project("name email image role")
+                .pipeline()
+        })
+    })
+
+    agg.facet({
+        totalCount: [ { $count: "count" } ],
+        results: agg2.pipeline()
+    })
+        .unwind('totalCount')
+        .addFields({ totalCount: "$totalCount.count"})
+
+    let items = (await agg.exec())[0]
+    if (!items) {
+        items = { totalCount: 0, results: [] }
+    }
+
+    return res
+        .status(StatusCodes.OK)
+        .json(Response.success({ items }))
 }
 
 module.exports = {
     save,
     get,
     updateStatus,
-    deleteItem
+    deleteItem,
+    listItems
 }
