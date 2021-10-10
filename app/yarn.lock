@@ -934,6 +934,13 @@
     "@babel/helper-validator-identifier" "^7.14.9"
     to-fast-properties "^2.0.0"
 
+"@capacitor-community/admob@^3.2.0":
+  version "3.2.0"
+  resolved "https://registry.yarnpkg.com/@capacitor-community/admob/-/admob-3.2.0.tgz#49533f8340b144faf5f4a04dbe933190d67792c5"
+  integrity sha512-g5mUCl4UyTVOoxqzLBdAy3BHou2Sm8GJBU3rgI9x5nESdVfcpeBgveBHOjCA9O8ATTeSFWSZIlXbNTTzlwI3YA==
+  dependencies:
+    "@capacitor/core" "^3.0.0"
+
 "@capacitor-community/sqlite@^3.2.3-1":
   version "3.2.3-1"
   resolved "https://registry.yarnpkg.com/@capacitor-community/sqlite/-/sqlite-3.2.3-1.tgz#31b6909565add0734dbb2eb7531d2b482e1c3a26"
@@ -944,7 +951,7 @@
   resolved "https://registry.yarnpkg.com/@capacitor/app/-/app-1.0.3.tgz#d9c7f774a1b3a93786c64477cb9adfb9d00a66bb"
   integrity sha512-kilAdWODV5p32wz0jVGdSoQTEx4Q0TM/xYj9w3iYYNI24v1WIRnEs04TaGTG8JFYIUksJaOqGC3PoZddfZ1POA==
 
-"@capacitor/core@^3.2.4":
+"@capacitor/core@^3.0.0", "@capacitor/core@^3.2.4":
   version "3.2.4"
   resolved "https://registry.yarnpkg.com/@capacitor/core/-/core-3.2.4.tgz#8da5774f6237ccaa770b81caff3cffbecbf7e1e8"
   integrity sha512-TAo9u2XPN8IH3xqTjOfsUT8PYIC2vwimKIJoff/knZs19WnGATklfcWnXpxUecfm2VFMCggd80FRPgjPOS75Ag==

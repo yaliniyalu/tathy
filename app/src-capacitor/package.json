@@ -1,10 +1,11 @@
 {
   "name": "Tathy",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "Tathy - Facts App",
   "author": "Samar Yalini <samarjben@outlook.com>",
   "private": true,
   "dependencies": {
+    "@capacitor-community/admob": "^3.2.0",
     "@capacitor-community/sqlite": "^3.2.3-1",
     "@capacitor/android": "^3.2.4",
     "@capacitor/app": "^1.0.3",

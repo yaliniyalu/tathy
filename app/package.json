@@ -8,9 +8,11 @@
   "scripts": {
     "dev:android": "quasar dev -m capacitor -T android",
     "dev": "quasar dev",
+    "build:android": "quasar build -m capacitor -T android",
     "test": "echo \"No test specified\" && exit 0"
   },
   "dependencies": {
+    "@capacitor-community/admob": "^3.2.0",
     "@capacitor-community/sqlite": "^3.2.3-1",
     "@capacitor/app": "^1.0.3",
     "@capacitor/core": "^3.2.4",

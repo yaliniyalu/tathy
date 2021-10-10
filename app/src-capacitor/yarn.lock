@@ -2,6 +2,13 @@
 # yarn lockfile v1
 
 
+"@capacitor-community/admob@^3.2.0":
+  version "3.2.0"
+  resolved "https://registry.yarnpkg.com/@capacitor-community/admob/-/admob-3.2.0.tgz#49533f8340b144faf5f4a04dbe933190d67792c5"
+  integrity sha512-g5mUCl4UyTVOoxqzLBdAy3BHou2Sm8GJBU3rgI9x5nESdVfcpeBgveBHOjCA9O8ATTeSFWSZIlXbNTTzlwI3YA==
+  dependencies:
+    "@capacitor/core" "^3.0.0"
+
 "@capacitor-community/sqlite@^3.2.3-1":
   version "3.2.3-1"
   resolved "https://registry.yarnpkg.com/@capacitor-community/sqlite/-/sqlite-3.2.3-1.tgz#31b6909565add0734dbb2eb7531d2b482e1c3a26"

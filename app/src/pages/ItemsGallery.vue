@@ -7,19 +7,17 @@
       vertical
       swipeable
       animated
-      class="bg-black"
+      class="bg-black fullscreen"
       height="100%"
-      style="width: 100%"
-      fullscreen
     >
       <q-carousel-slide :name="i" class="column no-wrap flex-center q-pa-none"  v-for="(item, i) in items">
-        <div class="viewer-container" :style="`width: ${displayWidth}`" ref="imgWrapperRef">
+        <div class="viewer-container" :style="`width: ${displayWidth};`" ref="imgWrapperRef">
           <q-img style="width: 100%" :src="getAssetsUrl(`${item._id}_${imageSize}.jpg`, 'items/rendered')" alt="image" @dblclick="likeItem"/>
         </div>
       </q-carousel-slide>
 
       <template v-slot:control>
-        <q-page-sticky position="bottom-right" :offset="[18, 42]">
+        <q-page-sticky position="bottom-right" :offset="[18, 55]">
           <q-fab
             v-model="fab"
             label="Actions"
@@ -129,13 +127,12 @@ async function fetchItems(from, limit) {
   }
 }
 
-onMounted(() => {
-  AppService.setTheme("#000000", false)
+onMounted(async () => {
+  await AppService.setTheme("#000000", false, false)
 })
 
-onBeforeUnmount(() => {
-  document.removeEventListener('backbutton', handleBackButton)
-  AppService.setTheme("#ffffff", true)
+onBeforeUnmount(async () => {
+  await AppService.setTheme("#ffffff", true, true)
 })
 
 async function likeItem(e) {
