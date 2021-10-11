@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const fs = require("fs");
 const bcrypt = require("bcrypt");
 const renderSvg = require("../render-svg");
+const Tag = require("./tag");
 
 const schema = new mongoose.Schema({
     index: Number,
@@ -107,6 +108,26 @@ schema.post('deleteOne', function () {
 
     if (this.style.image) {
         fs.unlink(process.env.UPLOAD_DIR + "/items/cropped/" + this.style.image, () => {})
+    }
+})
+
+schema.post('save', function () {
+    if (this._prevStyleImage) {
+        fs.unlink(process.env.UPLOAD_DIR + "/items/cropped/" + this._prevStyleImage, () => {})
+    }
+
+    if (this._prevImage) {
+        fs.unlink(process.env.UPLOAD_DIR + "/items/" + this._prevImage, () => {})
+    }
+
+    if (this.tags.length) {
+        Tag.bulkWrite(this.tags.map(tag => ({
+            updateOne: {
+                filter: { tag: tag.toLowerCase() },
+                update: { tag: tag.toLowerCase() },
+                upsert: true
+            }
+        }))).then()
     }
 })
 
