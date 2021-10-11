@@ -2,6 +2,7 @@
 import http from "src/http";
 import {LocalStorage} from "quasar";
 import ui from "src/ui";
+import {api} from "boot/axios";
 
 export async function setAuthToken(context, token) {
   context.commit('setAuthToken', token)
@@ -48,4 +49,15 @@ export async function logout(context) {
   context.commit('setUser', null)
   http.defaults.headers.Authorization = null
   LocalStorage.remove('token')
+}
+
+export async function getFactTypes(context) {
+  if (!context.state.factTypes) {
+    const res = await api.get('/fact-types')
+    const data = res.data.data.types.map(v => v.name)
+    context.commit('setFactTypes', data)
+    return data
+  }
+
+  return context.state.factTypes
 }

@@ -4,8 +4,8 @@ const Item = require("./item")
 const Report = require("./report")
 const Device = require("./device")
 const Tag = require("./tag")
-const Category = require("./category")
+const FactType = require("./fact-type")
 
 module.exports = {
-    User, Otp, Item, Report, Device, Tag, Category
+    User, Otp, Item, Report, Device, Tag, FactType
 }

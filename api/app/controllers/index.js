@@ -6,6 +6,7 @@ const ItemController = require("./item-controller")
 const AppController = require("./app-controller")
 const ReportController = require("./report-controller")
 const DashboardController = require("./dashboard-controller")
+const FactTypeController = require("./fact-type-controller")
 
 module.exports = {
     AuthController,
@@ -15,5 +16,6 @@ module.exports = {
     ItemController,
     AppController,
     ReportController,
-    DashboardController
+    DashboardController,
+    FactTypeController
 }

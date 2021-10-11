@@ -91,6 +91,7 @@ import {crop, getAssetUrl, rgbToHex} from "src/utils";
 import ImageCropperDialog from "components/ImageCropperDialog";
 import ColorThief from 'colorthief'
 import {api} from "boot/axios";
+import {useStore} from "vuex";
 
 const { dialogRef, onDialogOK } = useDialogPluginComponent()
 const $q = useQuasar()
@@ -101,12 +102,11 @@ const props = defineProps({
 });
 // const emit = defineEmits(['change'])
 
-const types = [
-  'None',
-  'Did You Know',
-  'Fun Fact',
-  'Fact'
-]
+const store = useStore()
+
+const types = ref([
+  'None'
+])
 
 const fontFamilies = [
   "Asap Condensed",
@@ -131,7 +131,7 @@ const fontSizeRange = [16, 46];
 
 const id = ref(null)
 const text = ref()
-const type = ref(types[3])
+const type = ref()
 const image = ref()
 const fontFamily = ref(fontFamilies[6])
 const themeColor = ref(themeColors[0])
@@ -177,6 +177,10 @@ let svg = null;
 onMounted(async () => {
   const { data } = await http.get('tags')
   tagsSearch.value = data.data.tags.map(v => v.tag)
+
+  const t = await store.dispatch("app/getFactTypes")
+  types.value.push(...t)
+  type.value = types.value[1]
 
   unpackItem()
 

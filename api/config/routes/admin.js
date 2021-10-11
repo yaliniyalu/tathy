@@ -2,7 +2,7 @@ const multer = require("multer");
 const path = require("path");
 const uuid = require("uuid");
 const {AuthController, UploadController, UserController, TagController, ItemController,
-    ReportController, DashboardController
+    ReportController, DashboardController, FactTypeController
 } = require("../../app/controllers");
 
 function routes(app) {
@@ -14,7 +14,6 @@ function routes(app) {
     routerNoToken.post('/auth/recover-password', AuthController.forgetPasswordVerifyEmail);
     routerNoToken.get('/auth/recover-password/verify', AuthController.forgetPasswordVerifyOtp);
     routerNoToken.post('/auth/recover-password/change', AuthController.forgetPasswordChange);
-
 
     const storage = multer.diskStorage({
         destination: function (req, file, cb) {
@@ -43,6 +42,11 @@ function routes(app) {
     router.patch('/item/:item/status', ItemController.updateStatus)
     router.delete('/item/:item', ItemController.deleteItem)
     router.post('/items/search', ItemController.listItems)
+
+    // Fact Types
+    router.post('/fact-types', FactTypeController.addFactType)
+    router.get('/fact-types', FactTypeController.listFactTypes)
+    router.delete('/fact-types/:type', FactTypeController.deleteFactType)
 
     // Report
     router.get('/reports', ReportController.listAll)
