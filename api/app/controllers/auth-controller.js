@@ -178,7 +178,7 @@ const forgetPasswordChange = async (req, res) => {
 }
 
 const getMe = async (req, res) => {
-    const id = "613f062ae78aa72100094506"
+    const id = req['userId']
 
     try {
         const user = await User.findById(id).exec()
