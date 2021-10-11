@@ -1,6 +1,6 @@
 
 export function getAssetsUrl(name, type) {
-  return "http://192.168.1.4:3006/uploads/" + type + "/" + name
+  return process.env.API_URL + "/uploads/" + type + "/" + name
 }
 
 export function getOptimizeImageSize() {

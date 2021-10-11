@@ -8,7 +8,7 @@
   "scripts": {
     "dev:android": "quasar dev -m capacitor -T android",
     "dev": "quasar dev",
-    "build:android": "quasar build -m capacitor -T android",
+    "build:android": "quasar build -m capacitor -T android --ide",
     "test": "echo \"No test specified\" && exit 0"
   },
   "dependencies": {

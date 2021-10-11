@@ -77,6 +77,7 @@ const totalCount = ref(null)
 const currentIndex = ref(0)
 
 const items = ref([])
+const preloadedImages = []
 
 onMounted(async () => {
   if (!tag) {
@@ -84,15 +85,38 @@ onMounted(async () => {
     slide.value = parseInt(value ?? 0)
   }
 
-  const fromIndex = Math.max(0, currentIndex.value - 10)
-  await fetchItems(fromIndex)
+  // const fromIndex = Math.max(0, currentIndex.value - 10)
+  await fetchItems(0)
+
+  for (let i = slide.value - 2; i <= slide.value + 2; i++) {
+    if (i < 0) continue
+    preloadImage(i)
+  }
 })
+
+function preloadImage(index) {
+  const img = new Image()
+  img.src = getAssetsUrl(`${items.value[index]._id}_${imageSize.value}.jpg`, 'items/rendered');
+  preloadedImages.push(img)
+
+  if (preloadedImages.length > 5) {
+    preloadedImages.shift()
+  }
+}
 
 watch(loading, () => {
   if (loading.value) {
     quasar.loading.show()
   } else {
     quasar.loading.hide()
+  }
+})
+
+watch(slide, async (curr, prev) => {
+  if (curr - prev) {
+    preloadImage(curr + 3)
+  } else {
+    preloadImage(curr - 3)
   }
 })
 

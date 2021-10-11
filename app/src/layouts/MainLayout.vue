@@ -15,9 +15,9 @@ import AdService from "src/services/AdService";
 
 onMounted(async () => {
   try {
-    const adService = new AdService()
-    await adService.initialize()
-    await adService.showBannerAd()
+    // const adService = new AdService()
+    // await adService.initialize()
+    // await adService.showBannerAd()
   } catch (e) {
   }
 })
