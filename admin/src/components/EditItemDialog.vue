@@ -268,6 +268,10 @@ async function uploadImage() {
   }
 }
 
+function getUrlExtension(url) {
+  return url.split(/[#?]/)[0].split('.').pop().trim();
+}
+
 async function autoCropImage() {
   return new Promise(async (resolve, reject) => {
     const aspectWidth = svg.getSvgSize().w
@@ -276,7 +280,7 @@ async function autoCropImage() {
     const croppedCanvas = await crop(currImage.url, Math.max(aspectWidth, aspectHeight) / Math.min(aspectWidth, aspectHeight))
     croppedCanvas.toBlob(async blob => {
       let data = new FormData();
-      data.append('file', blob);
+      data.append('file', blob, 'file.' + getUrlExtension(currImage.url));
 
       const res = await api.post('upload', data, {headers: {'Content-Type': 'multipart/form-data'}})
 
