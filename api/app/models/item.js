@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const fs = require("fs");
 const bcrypt = require("bcrypt");
-const renderSvg = require("../render-svg");
+const {renderSvg, renderWatermark} = require("../render");
 const Tag = require("./tag");
 
 const schema = new mongoose.Schema({
@@ -85,19 +85,15 @@ schema.pre("save", function (next) {
 
     const sizes = [200, 320, 480, 720, 960, 1280]
     renderSvg(this.renderedSvg, sizes, process.env.UPLOAD_DIR + "/items/rendered/" + this._id)
-        .then(() => next())
-        .catch(e => next(e));
-
-    const svg = this.renderedSvg.replace("</svg>", `
-        <g>
-           <text font-size="44" font-family="Fleur De Leah" font-weight="bold" x="20" y="55">
-              <tspan fill="#26A69A80">T</tspan><tspan fill="#CD5C5C80">athy</tspan>
-           </text>
-        </g>
-    `) + "</svg>"
-
-    renderSvg(svg, [720], process.env.UPLOAD_DIR + "/items/rendered/shared/" + this._id)
-        .then(() => next())
+        .then(() => {
+            renderWatermark(
+                process.env.UPLOAD_DIR + "/items/rendered/" + this._id + "_720.jpg",
+                process.env.STATIC_DIR + "/logo_white.png",
+                process.env.UPLOAD_DIR + "/items/rendered/shared/" + this._id + "_720.jpg"
+            )
+                .then(() => next())
+                .catch(e => next(e))
+        })
         .catch(e => next(e));
 })
 

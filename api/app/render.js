@@ -1,4 +1,5 @@
 const puppeteer = require('puppeteer');
+const Jimp = require("jimp");
 
 const renderSvg = async (svg, sizes, filepath) => {
     const browser = await puppeteer.launch({headless: true});
@@ -24,6 +25,7 @@ const renderSvg = async (svg, sizes, filepath) => {
             document.body.appendChild(div)
         }
 
+        appendStyleSheet("https://fonts.googleapis.com/css2?family=Fleur+De+Leah&display=swap")
         appendStyleSheet('https://fonts.googleapis.com/css2?family=Nova+Flat&family=Nova+Flat')
         appendStyleSheet('https://fonts.googleapis.com/css2?family=Asap+Condensed:wght@400;700&family=Barlow+Condensed:wght@400;700&family=Barlow+Semi+Condensed:wght@400;700&family=Fira+Sans+Condensed:wght@400;700&family=Istok+Web:wght@400;700&family=Open+Sans+Condensed:wght@300;700&family=Roboto+Condensed:wght@400;700&family=Saira+Condensed:wght@400;700&family=Stint+Ultra+Condensed&family=Ubuntu+Condensed&display=swap')
 
@@ -43,4 +45,25 @@ const renderSvg = async (svg, sizes, filepath) => {
     await browser.close()
 };
 
-module.exports = renderSvg
+const renderWatermark = async (imageStr, logoStr, outputStr) => {
+    const [image, logo] = await Promise.all([
+        Jimp.read(imageStr),
+        Jimp.read(logoStr)
+    ]);
+
+    logo.opacity(0.7)
+
+    const x = 10, y = 10
+
+    const output = await image.composite(logo, x, y, [{
+        mode: Jimp.BLEND_SCREEN,
+        opacitySource: 0.1,
+        opacityDest: 1
+    }])
+    output.write(outputStr)
+};
+
+module.exports = {
+    renderSvg,
+    renderWatermark
+}
