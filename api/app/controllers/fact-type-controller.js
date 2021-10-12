@@ -5,7 +5,7 @@ const {StatusCodes} = require("http-status-codes");
 /** @type {ExpressRequestHandler} */
 const listFactTypes = async (req, res) => {
     try {
-        const types = await FactType.find().sort({ name: 1 }).exec()
+        const types = await FactType.find().exec()
         return res.json(Response.success({ types }))
     } catch (e) {
         return res
