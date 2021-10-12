@@ -41,6 +41,7 @@ const getTags = async (req, res) => {
     })
         .addFields({ items: {$size: "$items"} })
         .unwind('items')
+        .sort({ items: -1 })
 
     const tags = await agg.exec()
 
