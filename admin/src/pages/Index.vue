@@ -15,12 +15,12 @@
       </div>
     </div>
 
-    <div class="row q-mt-lg q-col-gutter-md">
+    <div class="row q-mt-lg q-col-gutter-md" v-if="data.items7Days">
       <div class="col">
-        <ItemsChart/>
+        <ItemsChart :data="data.items7Days"/>
       </div>
       <div class="col">
-        <NewUsersChart/>
+        <NewUsersChart :data="data.installs7Days"/>
       </div>
     </div>
   </q-page>

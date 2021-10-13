@@ -1,10 +1,6 @@
 <template>
   <q-card>
     <q-card-section>
-      New Users
-    </q-card-section>
-    <q-separator/>
-    <q-card-section>
       <ECharts class="chart" :option="options" />
     </q-card-section>
   </q-card>
@@ -14,18 +10,36 @@
 import {computed} from "vue";
 import ECharts from 'vue-echarts'
 
+const props = defineProps({
+  data: {
+    type: Array,
+    required: true
+  }
+});
+
+const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+const category = props.data.map(v => days[new Date(v.date).getDay()])
+const series = props.data.map(v => v.count)
+
 const options = computed(() => {
   return {
+    title: {
+      text: 'New Users'
+    },
+    tooltip: {
+      trigger: 'axis'
+    },
     xAxis: {
       type: 'category',
-      data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+      data: category
     },
     yAxis: {
       type: 'value'
     },
     series: [
       {
-        data: [0, 0, 0, 0, 0, 0, 0],
+        data: series,
         type: 'line',
         smooth: true
       }

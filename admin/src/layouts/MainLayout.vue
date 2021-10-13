@@ -51,7 +51,7 @@
     </q-page-container>
 
     <q-footer class="text-grey-8 text-center bg-transparent">
-      <span>&copy; 2021. <a class="text-grey-8" href="#">Infopedia</a>. All rights reserved</span>
+      <span>&copy; 2021. <a class="text-grey-8" href="#">Tathy</a>. All rights reserved</span>
     </q-footer>
   </q-layout>
 </template>
