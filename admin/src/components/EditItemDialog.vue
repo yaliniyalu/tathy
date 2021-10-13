@@ -40,7 +40,7 @@
             <div>
               <div class="row q-col-gutter-md">
                 <q-select class="col" v-model="fontFamily" :model-value="fontFamily" outlined stack-label label="Font Family" :options="fontFamilies" :disable="!text"/>
-                <q-select class="col" v-model="themeColor" :model-value="themeColor" outlined stack-label label="Theme Color" :options="paletteColors">
+                <q-select class="col" v-model="themeColor" :model-value="themeColor" outlined stack-label label="Theme Color" :options="themeColors">
                   <template v-slot:option="scope">
                     <q-item v-bind="scope.itemProps">
                       <q-item-section avatar>
@@ -57,6 +57,10 @@
                       <div class="q-mr-xs" :style="{width: '15px', height: '15px', backgroundColor: themeColor}"></div>
                       <span>{{ themeColor }}</span>
                     </div>
+                  </template>
+
+                  <template v-slot:after>
+                    <q-btn round flat icon="refresh" @click="themeColor = getRandomColor()"/>
                   </template>
                 </q-select>
               </div>
@@ -87,9 +91,8 @@ import {computed, onMounted, reactive, ref, watch} from "vue";
 import http from "src/http";
 import SvgCreator from "src/js/svg-creator";
 import ui from "src/ui";
-import {crop, getAssetUrl, rgbToHex} from "src/utils";
+import {crop, getAssetUrl} from "src/utils";
 import ImageCropperDialog from "components/ImageCropperDialog";
-import ColorThief from 'colorthief'
 import {api} from "boot/axios";
 import {useStore} from "vuex";
 
@@ -120,12 +123,29 @@ const fontFamilies = [
   "Ubuntu Condensed"
 ]
 
-const themeColors = [
-  '#CD5C5C',
-  '#f44336', '#e91e63',
-  '#9c27b0', '#3f51b5',
-  '#2196f3'
-]
+const themeColors = Object.values(
+  {
+    "red" : "#f44336",
+    "pink" : "#e91e63",
+    "purple" : "#9c27b0",
+    "deep-purple" : "#673ab7",
+    "indigo" : "#3f51b5",
+    "blue" : "#2196f3",
+    "light-blue" : "#03a9f4",
+    "cyan" : "#00bcd4",
+    "teal" : "#009688",
+    "green" : "#4caf50",
+    "light-green" : "#8bc34a",
+    "lime" : "#cddc39",
+    "yellow" : "#ffeb3b",
+    "amber" : "#ffc107",
+    "orange" : "#ff9800",
+    "deep-orange" : "#ff5722",
+    "brown" : "#795548",
+    "grey" : "#9e9e9e",
+    "blue-grey" : "#607d8b",
+  }
+);
 
 const fontSizeRange = [16, 46];
 
@@ -134,7 +154,7 @@ const text = ref()
 const type = ref()
 const image = ref()
 const fontFamily = ref(fontFamilies[6])
-const themeColor = ref(themeColors[0])
+const themeColor = ref(getRandomColor())
 const fontSize = ref(fontSizeRange[0])
 const imageHeight = ref(60)
 const hasSeparator = ref(true)
@@ -145,7 +165,6 @@ const tags = ref([])
 const typeText = computed(() => type.value === 'None' ? null : type.value)
 const tagsSearch = ref()
 const svgPreview = ref();
-const stolenColors = ref([])
 
 const uploadingImage = ref(false)
 const uploadedImage = ref()
@@ -156,19 +175,6 @@ const currImage = reactive({
   name: '',
   url: '',
   croppedName: ''
-})
-
-const paletteColors = computed(() => {
-  const colors = [];
-
-  if (!themeColors.includes(themeColor.value) && !stolenColors.value.includes(themeColor.value)) {
-    colors.push(themeColor.value)
-  }
-
-  colors.push(...themeColors)
-  colors.push(...stolenColors.value)
-
-  return colors
 })
 
 /** @type SvgCreator */
@@ -198,17 +204,6 @@ onMounted(async () => {
 function setImage() {
   svg.setImage(image.value)
 }
-
-watch(() => currImage.url, () => {
-  const img = new Image()
-  img.crossOrigin = "anonymous";
-  img.onload = () => {
-    const thief = new ColorThief()
-    const colors = thief.getPalette(img)
-    stolenColors.value = colors.map(v => rgbToHex(...v))
-  }
-  img.src = image.value
-})
 
 function reloadSvg() {
   svg.refresh()
@@ -343,6 +338,10 @@ async function saveItem() {
 
 function resetItem() {
   unpackItem()
+}
+
+function getRandomColor() {
+  return themeColors[Math.floor((Math.random()*themeColors.length))];
 }
 </script>
 
