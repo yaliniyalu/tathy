@@ -63,8 +63,10 @@ const save = async (req, res) => {
         item.statusChangedAt = Date.now()
     }
 
-    const count = await Item.count().exec()
-    item.index = count + 1
+    if (!params.item) {
+        const count = await Item.count().exec()
+        item.index = count + 1
+    }
 
     item.setAuthor(req['userId'])
 
