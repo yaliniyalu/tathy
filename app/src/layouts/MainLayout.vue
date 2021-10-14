@@ -2,7 +2,7 @@
   <q-layout view="hHh lpR fFf">
 
     <q-page-container>
-      <router-view />
+      <router-view/>
     </q-page-container>
 
   </q-layout>
@@ -10,16 +10,12 @@
 
 <script setup>
 import {onMounted} from "vue";
-import AdService from "src/services/AdService";
+import {useQuasar} from "quasar";
 
+const quasar = useQuasar()
 
-onMounted(async () => {
-  try {
-    // const adService = new AdService()
-    // await adService.initialize()
-    // await adService.showBannerAd()
-  } catch (e) {
-  }
+onMounted(() => {
+  quasar.dark.set(true)
 })
 
 

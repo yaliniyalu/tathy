@@ -1,8 +1,8 @@
 <template>
-  <q-page class="q-pa-md bg-white">
+  <q-page class="q-pa-md">
     <AppHeader title="Settings"/>
 
-    <q-list bordered separator class="bg-white">
+    <q-list bordered separator>
       <q-item clickable v-ripple>
         <q-item-section avatar>
           <q-icon name="notifications" />
@@ -25,7 +25,20 @@
           <q-item-label caption>Will continue from this fact</q-item-label>
         </q-item-section>
         <q-item-section side top>
-          <span>#{{ currentFact }}</span>
+          <span>#{{ currentFact + 1 }}</span>
+        </q-item-section>
+      </q-item>
+
+      <q-item clickable v-ripple @click="promptSwiperDirection">
+        <q-item-section avatar>
+          <q-icon name="import_export" />
+        </q-item-section>
+        <q-item-section>
+          <q-item-label>Swipe Direction</q-item-label>
+          <q-item-label caption>Direction of swipe to goto next/previous fact</q-item-label>
+        </q-item-section>
+        <q-item-section side top>
+          <span>{{ swiperDirection }}</span>
         </q-item-section>
       </q-item>
     </q-list>
@@ -34,36 +47,25 @@
 
 <script setup>
 import AppHeader from "components/AppHeader";
-import {onMounted, ref, watch} from "vue";
+import {computed} from "vue";
 import {useStore} from "vuex";
 import {useQuasar} from "quasar";
-import {Storage} from "@capacitor/storage"
-import {api} from "boot/axios";
 
 const store = useStore()
 const quasar = useQuasar()
 
-const notification = ref(true)
-const currentFact = ref(1)
 const totalFacts = store.state.app.totalFacts
-
-onMounted(async () => {
-  const { value } = await Storage.get({ key: 'settings.notification' });
-  notification.value = value === "1"
-
-  const currentPosition = await Storage.get({ key: 'data.currentFact' });
-  currentFact.value = parseInt(currentPosition.value ?? 1)
+const currentFact = computed({
+  set: (v) => store.dispatch('app/setCurrentFact', v),
+  get: () => store.state.app.currentFact
 })
-
-watch(notification, async () => {
-  const val = notification.value ? "1" : "0"
-  await Storage.set({ key: 'settings.notification', value: val });
-
-  const { deviceId } = await Storage.get({ key: 'device-id' });
-  const fcmId = notification.value ? "" : null
-
-  const res = await api.patch("/fcm", { deviceId, fcmId })
-  await Storage.set({ key: 'device-id', value: res.data.data.deviceId });
+const notification = computed({
+  set: (v) => store.dispatch('app/setNotificationEnabled', v),
+  get: () => store.state.app.notificationEnabled
+})
+const swiperDirection = computed({
+  set: (v) => store.dispatch('app/setSwiperDirection', v),
+  get: () => store.state.app.swiperDirection
 })
 
 function promptCurrentFact () {
@@ -72,7 +74,7 @@ function promptCurrentFact () {
     message: 'Will continue from this fact next time.',
     html: true,
     prompt: {
-      model: currentFact.value,
+      model: currentFact.value + 1,
       type: 'text',
       isValid: v => {
         if (!v) return false
@@ -86,12 +88,27 @@ function promptCurrentFact () {
     cancel: true,
     persistent: true
   }).onOk(async data => {
-    currentFact.value = parseInt(data)
-    await Storage.set({ key: 'data.currentFact', value: currentFact.value.toString() });
+    currentFact.value = parseInt(data) - 1
   })
 }
 
-
+function promptSwiperDirection () {
+  quasar.dialog({
+    title: 'Swipe Direction',
+    options: {
+      type: 'radio',
+      model: swiperDirection.value,
+      items: [
+        { label: 'Vertical', value: 'vertical' },
+        { label: 'Horizontal', value: 'horizontal' },
+      ]
+    },
+    cancel: true,
+    persistent: true
+  }).onOk(data => {
+    swiperDirection.value = data
+  })
+}
 </script>
 
 <style lang="scss" scoped>

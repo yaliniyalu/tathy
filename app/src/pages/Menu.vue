@@ -1,8 +1,8 @@
 <template>
-  <q-page class="q-pa-md bg-white">
+  <q-page class="q-pa-md">
     <AppHeader title="Menu"/>
 
-    <q-list bordered separator class="bg-white">
+    <q-list bordered separator>
       <q-item clickable v-ripple v-for="item in list" :to="item.to">
         <q-item-section avatar>
           <q-icon :name="item.icon" />

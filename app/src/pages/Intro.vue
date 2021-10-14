@@ -11,9 +11,6 @@
       padding
       class="bg-primary text-white shadow-1 fullscreen"
     >
-      <form>
-
-      </form>
       <q-carousel-slide :name="i" class="column no-wrap flex-center" v-for="(val, i) in data">
         <q-icon :name="val.icon" size="56px" />
         <div class="q-mt-md text-center">{{ val.text }}</div>
@@ -25,8 +22,7 @@
 </template>
 
 <script setup>
-import {onMounted, ref} from "vue";
-import {Storage} from "@capacitor/storage";
+import {onBeforeUnmount, onMounted, ref} from "vue";
 import {useRouter} from "vue-router";
 import {useStore} from "vuex";
 import AppService from "src/services/AppService";
@@ -40,7 +36,7 @@ const loading = ref(false)
 
 const data = [
   { icon: 'format_quote', text: 'Live as if you were to die tomorrow. Learn as if you were to live forever.' },
-  { icon: 'format_list_numbered', text: 'Over 10,000+ Facts' },
+  { icon: 'format_list_numbered', text: 'Over 500+ Facts' },
   { icon: 'image', text: 'Facts with images to make learning fun' },
   { icon: 'browser_updated', text: 'New Facts updated everyday' }
 ]
@@ -52,29 +48,32 @@ function nextSlide() {
 async function startApp() {
   loading.value = true
   try {
-    // await (new AppService()).registerApp().then().catch()
-    store.commit('app/setIsIntroShown', true)
-    await Storage.set({ key: 'intro', value: "1" });
+    await store.dispatch('app/setIsIntroShown', true)
+    await store.dispatch("app/registerDevice")
   } finally {
     await router.replace("/")
     loading.value = false
-
   }
 }
 
 onMounted(() => {
+  document.addEventListener('backbutton', handleBackButton)
   AppService.setTheme("#CD5C5C", true, false)
 })
 
-document.addEventListener('backbutton', function () {
+onBeforeUnmount(() => {
+  document.removeEventListener('backbutton', handleBackButton)
+})
+
+function handleBackButton(e) {
+  e.preventDefault()
+
   if (slide.value === 0) {
     App.exitApp()
   } else {
     slide.value = slide.value - 1
   }
-})
-
-
+}
 </script>
 
 <style scoped>

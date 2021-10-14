@@ -1,60 +1,77 @@
 <template>
-  <q-page class="q-pa-xs flex flex-center gallery bg-black">
+  <q-page class="flex flex-center gallery">
     <q-carousel
       v-model="slide"
-      transition-prev="jump-down"
-      transition-next="jump-up"
-      vertical
+      :transition-prev="transition.prev"
+      :transition-next="transition.next"
+      :vertical="swiperDirection !== 'horizontal'"
       swipeable
       animated
-      class="bg-black fullscreen"
       height="100%"
+      style="width: 100%"
+      fullscreen
     >
       <q-carousel-slide :name="i" class="column no-wrap flex-center q-pa-none"  v-for="(item, i) in items">
-        <div class="viewer-container" :style="`width: ${displayWidth};`" ref="imgWrapperRef">
+        <div class="viewer-container" :style="`width: ${displayWidth}`" ref="imgWrapperRef">
           <q-img style="width: 100%" :src="getAssetsUrl(`${item._id}_${imageSize}.jpg`, 'items/rendered')" alt="image" @dblclick="likeItem"/>
         </div>
       </q-carousel-slide>
 
       <template v-slot:control>
-        <q-page-sticky position="bottom-right" :offset="[18, 55]">
-          <q-fab
-            v-model="fab"
-            label="Actions"
-            external-label
-            vertical-actions-align="left"
-            color="dark"
-            icon="more_vert"
-            direction="up"
-          >
-            <q-fab-action external-label label-position="left" color="primary" @click="shareItem" icon="share" label="Share" />
-            <q-fab-action external-label label-position="left" color="accent" @click="bookmarkItem" icon="bookmark" label="Bookmark" />
-            <q-fab-action external-label label-position="left" color="secondary" @click="reportItem" icon="report_problem" label="Report" />
-          </q-fab>
-        </q-page-sticky>
-
         <q-page-sticky position="top-right" :offset="[18, 8]">
-          <q-btn icon="menu" round color="dark" @click="openMenu"/>
+          <q-btn icon="menu" round flat color="white" @click="openMenu"/>
         </q-page-sticky>
 
-        <q-page-sticky position="top" :offset="[0, 18]">
-          <b class="text-white">{{ slide + 1 }}/{{ totalCount }}</b>
+        <q-page-sticky position="top" :offset="[0, 18]" class="text-center">
+          <b class="text-white">{{ slide + 1 }}/{{ totalCount }}</b><br>
+          <q-badge color="grey" @click="router.back()" v-if="tag">Tag '{{ tag }}'</q-badge>
+        </q-page-sticky>
+
+        <q-page-sticky position="top-left" :offset="[18, 18]">
+          <b class="text-white brand-title"><span>T</span><span>athy</span></b>
+        </q-page-sticky>
+
+        <q-page-sticky expand position="bottom" :offset="[0, isBannerAdShown ? 50 : 18]">
+          <div class="flex justify-evenly" style="width: 100%">
+            <div>
+              <q-fab v-model="fab" external-label vertical-actions-align="right" flat color="white" icon="more_horiz" direction="up">
+                <!--              <q-fab-action external-label label-position="right" color="accent" @click="bookmarkItem" icon="bookmark" label="Bookmark" />-->
+                <q-fab-action external-label label-position="right" color="secondary" @click="reportItem" icon="report_problem" label="Report" />
+              </q-fab>
+            </div>
+            <div>
+              <q-btn icon="share" round flat padding="md" color="white" @click="shareItem" :loading="sharing">
+                <q-tooltip class="bg-dark" :offset="[10, 10]">Share</q-tooltip>
+              </q-btn>
+            </div>
+            <div>
+              <q-btn icon="file_download" round flat padding="md" color="white" @click="downloadItem" :loading="downloading">
+                <q-tooltip class="bg-dark" :offset="[10, 10]">Download</q-tooltip>
+              </q-btn>
+            </div>
+          </div>
         </q-page-sticky>
       </template>
     </q-carousel>
+
+    <q-inner-loading :showing="loading" class="gallery">
+      <q-spinner-bars size="50px" color="primary"/>
+    </q-inner-loading>
   </q-page>
 </template>
 
 <script setup>
-import {computed, onBeforeUnmount, onMounted, ref, watch} from "vue";
-import {api} from "boot/axios";
+import 'swiper/css';
+import {computed, nextTick, onBeforeUnmount, onMounted, ref, watch} from "vue";
 import {useQuasar} from "quasar";
+import {useStore} from "vuex";
 import {useRoute, useRouter} from "vue-router";
+import {Directory, Filesystem} from "@capacitor/filesystem";
+import {api} from "boot/axios";
 import {getAssetsUrl} from 'src/utils';
 import ItemService from "src/services/ItemService";
-import {useStore} from "vuex";
-import {Storage} from "@capacitor/storage";
 import AppService from "src/services/AppService";
+import AdService from "src/services/AdService";
 
 const quasar = useQuasar()
 const route = useRoute()
@@ -63,29 +80,59 @@ const store = useStore()
 
 const tag = route.query.tag
 const imageSize = ref("720")
-const slide = ref(0)
 const fab = ref()
 const imgWrapperRef = ref()
 
-const displayWidth = ref("100%")
+const displayWidth = ref((window.screen.width) + "px")
 if (window.screen.width > window.screen.height) {
   displayWidth.value = imageSize.value + "px"
 }
 
 const loading = ref(false)
+const sharing = ref(false)
+const downloading = ref(false)
 const totalCount = ref(null)
-const currentIndex = ref(0)
-
 const items = ref([])
+const seenCount = ref(0)
+const shouldShowAds = ref(false)
 const preloadedImages = []
 
-onMounted(async () => {
-  if (!tag) {
-    const { value } = await Storage.get({ key: 'data.currentFact' });
-    slide.value = parseInt(value ?? 0)
-  }
+let slide = null
+if (tag) {
+  slide = ref(0)
+} else {
+  slide = computed({
+    get: () => store.state.app.currentFact,
+    set: (v) => store.dispatch('app/setCurrentFact', v)
+  })
+}
 
-  // const fromIndex = Math.max(0, currentIndex.value - 10)
+const swiperDirection = computed(() => store.state.app.swiperDirection)
+const isBannerAdShown = computed({
+  get: () => store.state.app.isBannerAdShown,
+  set: v => store.dispatch("app/setIsBannerAdShown", v)
+})
+
+/** @type {ComputedRef<{prev: string, next: string}>}*/
+const transition = computed(() => {
+  if (swiperDirection.value === 'vertical') {
+    return {
+      prev: 'jump-down',
+      next: 'jump-up'
+    }
+  } else {
+    return {
+      prev: 'jump-right',
+      next: 'jump-left'
+    }
+  }
+})
+
+const adService = new AdService()
+
+onMounted(async () => {
+
+    // const fromIndex = Math.max(0, currentIndex.value - 10)
   await fetchItems(0)
 
   for (let i = slide.value - 2; i <= slide.value + 2; i++) {
@@ -93,6 +140,28 @@ onMounted(async () => {
     preloadImage(i)
   }
 })
+
+onMounted(() => {
+  showBannerAd()
+})
+
+onBeforeUnmount(() => {
+  hideBannerAd()
+})
+
+async function showBannerAd() {
+  if (!shouldShowAds.value) return
+
+  await adService.showBanner()
+  isBannerAdShown.value = true
+}
+
+async function hideBannerAd() {
+  if (!isBannerAdShown.value) return
+
+  await adService.hideBanner()
+  isBannerAdShown.value = false
+}
 
 function preloadImage(index) {
   const img = new Image()
@@ -104,30 +173,36 @@ function preloadImage(index) {
   }
 }
 
-watch(loading, () => {
-  if (loading.value) {
-    quasar.loading.show()
-  } else {
-    quasar.loading.hide()
-  }
-})
-
 watch(slide, async (curr, prev) => {
   if (curr - prev) {
+    seenCount.value ++
     preloadImage(curr + 3)
   } else {
     preloadImage(curr - 3)
   }
 })
 
-watch(slide, async () => {
-  if (tag) return
-  await Storage.set({ key: 'data.currentFact', value: slide.value.toString() });
+watch(totalCount, () => store.dispatch("app/setTotalFacts", totalCount))
+
+watch(seenCount, () => {
+  if (!shouldShowAds.value) return
+
+  if (seenCount.value % 12 === 0) {
+    try {
+      adService.showInterstitial()
+    } catch (e) {
+      alert(e)
+    }
+  }
 })
 
-watch(totalCount, () => store.commit("app/setTotalFacts", totalCount))
-
 async function fetchItems(from, limit) {
+  if (!tag && store.state.app.facts.length) {
+    items.value = store.state.app.facts
+    totalCount.value = store.state.app.totalFacts
+    return;
+  }
+
   loading.value = true
   try {
     const res = await api.get(`/items`, {
@@ -143,20 +218,24 @@ async function fetchItems(from, limit) {
       totalCount.value = data.count
     }
 
-    items.value = data.items
+    items.value = Object.freeze(data.items)
+
+    if (!tag) {
+      await store.dispatch("app/setFacts", data.items)
+    }
   } catch (e) {
-    quasar.notify({message: e.message, color: 'negative'})
+    notify({message: e.message, color: 'negative'})
   } finally {
     loading.value = false
   }
 }
 
 onMounted(async () => {
-  await AppService.setTheme("#000000", false, false)
+  await AppService.setTheme("#121212", false, false)
 })
 
 onBeforeUnmount(async () => {
-  await AppService.setTheme("#ffffff", true, true)
+  // await AppService.setTheme("#121212", false, true)
 })
 
 async function likeItem(e) {
@@ -196,12 +275,8 @@ function openMenu() {
   router.push('/menu')
 }
 
-function handleBackButton(e) {
-  e.preventDefault()
-  router.go(-1)
-}
-
 function shareItem() {
+  sharing.value = true
   const item = items.value[slide.value];
   const options = {
     message: item.text,
@@ -209,16 +284,79 @@ function shareItem() {
     files: [getAssetsUrl(`${item._id}_720.jpg`, 'items/rendered/shared')]
   };
 
-  window.plugins.socialsharing.shareWithOptions(options);
+  function onFinish() {
+    sharing.value = false
+  }
+
+  window.plugins.socialsharing.shareWithOptions(options, onFinish, () => {
+    notify({
+      type: 'negative',
+      message: 'Sharing Failed',
+      icon: 'report_problem',
+      timeout: 2000
+    })
+    onFinish()
+  });
 }
 
 function bookmarkItem() {
   ItemService.bookmarkItem(items.value[slide.value]._id, true)
-  quasar.notify({
+  notify({
     message: 'Bookmarked',
     icon: 'done',
     timeout: 2000
   })
+}
+
+const convertBlobToBase64 = (blob) => new Promise((resolve, reject) => {
+  const reader = new FileReader;
+  reader.onerror = reject;
+  reader.onload = () => {
+    resolve(reader.result);
+  };
+  reader.readAsDataURL(blob);
+});
+
+async function downloadItem() {
+  try {
+    downloading.value = true
+    const path = 'Pictures/tathy'
+    const directory = Directory.ExternalStorage
+
+    try {
+      await Filesystem.stat({path, directory})
+    } catch (e) {
+      await Filesystem.mkdir({path, directory, recursive: true})
+    }
+
+    const item = items.value[slide.value];
+    const url = getAssetsUrl(`${item._id}_720.jpg`, 'items/rendered/shared')
+    const blob = await fetch(url).then(res => res.blob());
+    const base64Data = await convertBlobToBase64(blob);
+
+    const filename = `${path}/${item.index}_${Math.round(new Date().getTime()/1000)}.jpg`
+    await Filesystem.writeFile({
+      path: filename,
+      data: base64Data,
+      directory
+    });
+
+    notify({
+      message: "Saved: " + filename,
+      multiLine: true,
+      icon: 'done',
+      timeout: 1500
+    })
+  } catch(e) {
+    notify({
+      type: 'negative',
+      message: "Download Failed",
+      icon: 'report_problem',
+      timeout: 2000
+    })
+  } finally {
+    downloading.value = false
+  }
 }
 
 function reportItem() {
@@ -254,16 +392,33 @@ async function reportItemRequest(id, report) {
   }
 }
 
+function notify(opts) {
+  if (isBannerAdShown.value) {
+    opts.classes = 'notify-above-ad'
+  }
+  quasar.notify(opts)
+}
+
 </script>
 
 <style lang="scss">
 .gallery {
+  background-color: #121212
 }
 
 .viewer-container {
   display: flex;
   justify-content: center;
   align-items: center
+}
+
+.brand-title {
+  line-height: 20px;
+  font-size: 30px;
+}
+
+.notify-above-ad {
+  margin-bottom: 60px;
 }
 </style>
 

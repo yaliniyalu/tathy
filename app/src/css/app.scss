@@ -11,3 +11,17 @@
 body {
   font-family: 'Open Sans', sans-serif;
 }
+
+
+.brand-title {
+  font-family: 'Fleur De Leah', sans-serif;
+  color: #fff;
+
+  span:first-child {
+    color: $primary;
+  }
+
+  span:last-child {
+    color: $secondary;
+  }
+}

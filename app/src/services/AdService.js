@@ -13,7 +13,7 @@ class AdService {
     });
   }
 
-  async showBannerAd() {
+  async showBanner() {
     const options = {
       adId: process.env.BANNER_AD_ID,
       adSize: BannerAdSize.BANNER,
@@ -23,9 +23,13 @@ class AdService {
     return AdMob.showBanner(options);
   }
 
-  async showInterstitialAd() {
+  async hideBanner() {
+    return AdMob.hideBanner()
+  }
+
+  async showInterstitial() {
     const options = {
-      adId: process.env.INTERSTITIAL_AD_ID,
+      adId: process.env.INTERSTITIAL_AD_ID
     };
 
     await AdMob.prepareInterstitial(options);

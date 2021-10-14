@@ -1,5 +1,5 @@
 <template>
-  <q-page class="q-pa-md bg-white">
+  <q-page class="q-pa-md">
     <AppHeader title="About"/>
 
     <div class="text-center">

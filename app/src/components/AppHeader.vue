@@ -1,8 +1,8 @@
 <template>
-  <q-header class="bg-white text-white">
+  <q-header>
     <q-toolbar>
-      <q-btn color="primary" dense flat round icon="arrow_back" @click="goBack"/>
-      <q-toolbar-title class="text-primary"><b class="text-primary title" v-if="title">{{ title }}</b></q-toolbar-title>
+      <q-btn dense flat round icon="arrow_back" @click="goBack"/>
+      <q-toolbar-title><b class="title" v-if="title">{{ title }}</b></q-toolbar-title>
     </q-toolbar>
   </q-header>
 </template>

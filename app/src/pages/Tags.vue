@@ -1,5 +1,5 @@
 <template>
-  <q-page class="q-pa-md bg-white">
+  <q-page class="q-pa-md">
     <AppHeader title="Tags"/>
 
     <q-inner-loading :showing="loading">
@@ -8,7 +8,7 @@
 
     <p class="text-grey text-center" v-if="!loading && !tags.length">No tags found</p>
 
-    <q-list bordered separator class="bg-white" v-if="tags.length">
+    <q-list bordered separator v-if="tags.length">
       <q-item clickable v-ripple v-for="tag in tags" :to="tag.items > 0 ? '/?tag=' + tag.tag : null">
         <q-item-section>
           <q-item-label>{{ tag.tag }}</q-item-label>

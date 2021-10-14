@@ -963,6 +963,11 @@
   resolved "https://registry.yarnpkg.com/@capacitor/device/-/device-1.0.3.tgz#32494fb7789ea6a4338526d785760c8e865a58be"
   integrity sha512-u209KTay2KaIrbMZuGSpTBmzyWkCO7en5zwV1a75//3YPBbjls4/T0Dgk5qKRAk6dXke5wF+0btsen8bm4jvsA==
 
+"@capacitor/filesystem@^1.0.3":
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/@capacitor/filesystem/-/filesystem-1.0.3.tgz#70a5bb6c6cadfd952799b0793609d8ee077c4e92"
+  integrity sha512-7vmIGsO/qheb20xbaY9/ohLDD1BPEcp7EcX/LV6CFB3R0fMqPp43mg85Yy6WnC2nV5mR27xtzkcSEndRVsHshg==
+
 "@capacitor/network@^1.0.3":
   version "1.0.3"
   resolved "https://registry.yarnpkg.com/@capacitor/network/-/network-1.0.3.tgz#b85436848cc564ce1dbd024ed602bf2f481825db"
